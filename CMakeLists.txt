@@ -17,3 +17,5 @@ add_executable(LayerTest
         NeuralNet_Foundation/Matrix.cpp
         NeuralNet_Foundation/Layer.cpp
 )
+add_executable(new_target NeuralNet_Foundation/Network.h
+        NeuralNet_Foundation/Network.cpp)

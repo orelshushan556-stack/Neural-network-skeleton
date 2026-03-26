@@ -11,9 +11,16 @@ public:
     ~Matrix();
     Matrix(const Matrix& other);
     Matrix& operator=(const Matrix& other);
+    // Move Constructor - בנאי הזזה
+    Matrix(Matrix&& other2) noexcept;
+    Matrix();
+
+    // Move Assignment Operator - אופרטור השמה בהזזה
+    Matrix& operator=(Matrix&& other) noexcept;
 
     int getRows() const;
     int getCols() const;
+
 
     double& operator()(int row, int col);
     double operator()(int row, int col) const;

@@ -40,18 +40,21 @@ Matrix::Matrix(Matrix&& other) noexcept {
 // Copy Assignment Operator: Deep copy with size check and reallocation
 Matrix& Matrix::operator=(const Matrix& other) {
     if (this == &other) return *this;
+    double* newData = nullptr;
 
-    if (rows != other.rows || cols != other.cols) {
-        delete[] data;
-        rows = other.rows;
-        cols = other.cols;
-        data = new double[rows * cols];
+    if (other.rows > 0 && other.cols > 0) {
+        newData = new double[other.rows * other.cols];
+        for (int i = 0; i < other.rows * other.cols; i++) {
+            newData[i] = other.data[i];
+        }
     }
 
-    int total = rows * cols;
-    for (int i = 0; i < total; i++) {
-        data[i] = other.data[i];
-    }
+    delete[] data;
+
+    // 3. מעדכנים את האובייקט
+    data = newData;
+    rows = other.rows;
+    cols = other.cols;
 
     return *this;
 }
@@ -109,11 +112,11 @@ Matrix Matrix::operator+(const Matrix& other) const {
 
 // Scalar Multiplication
 Matrix Matrix::operator*(double scalar) const {
-    Matrix result(rows, cols);
+    Matrix res(rows, cols);
     for (int i = 0; i < rows * cols; i++) {
-        result.data[i] = data[i] * scalar;
+        res.data[i] = data[i] * scalar;
     }
-    return result;
+    return res;
 }
 
 // Matrix Multiplication: Optimized using transpose for cache efficiency
@@ -227,10 +230,8 @@ void Matrix::fillZero() {
 // ReLU Derivative: 1 if positive, 0 otherwise
 Matrix Matrix::reluDerivative() const {
     Matrix result(rows, cols);
-
-
     for (int i = 0; i <rows*cols; i++) {
-        if (data[i] < 0.0) {
+        if (data[i] <= 0.0) {
             result.data[i] = 0.0;
         }else {
             result.data[i] = 1;
@@ -248,3 +249,4 @@ bool Matrix::operator==(const Matrix& other) const {
     }
     return true;
 }
+

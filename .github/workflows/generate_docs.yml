@@ -18,7 +18,13 @@ jobs:
       - name: Install PDF & Doc Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends pandoc texlive-latex-base texlive-latex-recommended texlive-fonts-recommended
+          # הוספת lmodern ו-texlive-latex-recommended פותרת את השגיאות האחרונות
+          sudo apt-get install -y --no-install-recommends \
+            pandoc \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-fonts-recommended \
+            lmodern
 
       - name: Generate Technical Report
         run: |
@@ -37,7 +43,7 @@ jobs:
           - **Activation**: Integrated ReLU processing.
           
           ## 3. High-Level Orchestration (Network class)
-          The top-level orchestrator for the AI model, designed for Feedforward and Backpropagation.
+          The top-level orchestrator for the AI model.
           EOF
 
       - name: Create Professional PDF
@@ -49,5 +55,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add docs/Project_Technical_Docs.pdf
-          git commit -m "Update technical PDF (Fix: Missing LaTeX packages)" || echo "No changes"
+          git commit -m "Update technical PDF (Fix: Missing LaTeX fonts)" || echo "No changes"
           git push

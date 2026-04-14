@@ -15,39 +15,39 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install PDF Tools
+      - name: Install PDF & Doc Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y pandoc texlive-latex-base texlive-fonts-recommended
 
-      - name: Generate Project Report
+      - name: Generate Technical Report
         run: |
           mkdir -p docs
           cat <<EOF > docs/Architecture_Report.md
-          # Neural Network Project - Technical Documentation
+          # Neural Network Project - Engineering Report
           
-          ## 1. Matrix Engine (Matrix.h)
-          - **Memory Management**: Implements Deep Copy, Destructors, and Move semantics (O(1)) for performance.
-          - **Linear Algebra**: Supports Matrix Multiplication, Hadamard products, and Scalar operations.
-          - **Activations**: Built-in ReLU and ReLU Derivative for backpropagation.
+          ## 1. Linear Algebra Core (Matrix class)
+          The system is powered by a custom Matrix engine. 
+          - **Efficiency**: Implements Move Semantics (O(1)) and deep copy logic.
+          - **Math Operations**: Optimized multiplication, Hadamard products, and ReLU derivatives.
           
-          ## 2. Neural Layer (Layer.h)
-          - **Weights/Bias**: Uses Xavier-style initialization (1/sqrt) for stable gradients.
-          - **Forward Pass**: Efficient matrix transformation with integrated activation.
+          ## 2. Neural Architecture (Layer class)
+          Each layer manages weights and biases for signal processing.
+          - **Initialization**: Xavier/He initialization (1/sqrt) for stability.
+          - **Activation**: Integrated ReLU processing.
           
-          ## 3. Network Architecture (Network.h)
-          - **Dynamic Sizing**: Supports custom layer configurations.
-          - **Algorithm**: Structured for Feedforward and Backpropagation training cycles.
+          ## 3. High-Level Orchestration (Network class)
+          The top-level orchestrator for the AI model, designed for Feedforward and Backpropagation.
           EOF
 
-      - name: Convert MD to PDF
+      - name: Create Professional PDF
         run: |
-          pandoc docs/Architecture_Report.md -o docs/Project_Documentation.pdf
+          pandoc docs/Architecture_Report.md -o docs/Project_Technical_Docs.pdf
 
-      - name: Push PDF Update
+      - name: Push to GitHub
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add docs/Project_Documentation.pdf
-          git commit -m "Automated update: Professional Architecture PDF" || echo "No changes"
+          git add docs/Project_Technical_Docs.pdf
+          git commit -m "Update technical PDF (Automated Analysis)" || echo "No changes"
           git push

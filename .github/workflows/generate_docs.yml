@@ -15,22 +15,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Analyze Code with Gemini
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          echo "Scanning source files in NeuralNet_Foundation..."
-          # The robot is now looking at Matrix.h, Layer.h, and Network.h
-          
-      - name: Generate PDF Documentation
+      - name: Analyze Code
         run: |
           mkdir -p docs
-          echo "Converting analysis to PDF format..."
+          echo "Neural Network Project Documentation" > docs/summary.txt
+          echo "This is an automated summary of the Matrix and Layer classes." >> docs/summary.txt
 
-      - name: Push Documentation to Repo
+      - name: Commit and Push
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add docs/*.pdf || echo "No PDF files found"
-          git commit -m "Update technical documentation (Automated)" || echo "No changes to commit"
+          git add docs/
+          git commit -m "Create automated docs folder" || echo "No changes"
           git push

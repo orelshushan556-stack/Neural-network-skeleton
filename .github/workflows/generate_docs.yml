@@ -15,16 +15,39 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Analyze Code
+      - name: Install PDF Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-latex-base texlive-fonts-recommended
+
+      - name: Generate Project Report
         run: |
           mkdir -p docs
-          echo "Neural Network Project Documentation" > docs/summary.txt
-          echo "This is an automated summary of the Matrix and Layer classes." >> docs/summary.txt
+          cat <<EOF > docs/Architecture_Report.md
+          # Neural Network Project - Technical Documentation
+          
+          ## 1. Matrix Engine (Matrix.h)
+          - **Memory Management**: Implements Deep Copy, Destructors, and Move semantics (O(1)) for performance.
+          - **Linear Algebra**: Supports Matrix Multiplication, Hadamard products, and Scalar operations.
+          - **Activations**: Built-in ReLU and ReLU Derivative for backpropagation.
+          
+          ## 2. Neural Layer (Layer.h)
+          - **Weights/Bias**: Uses Xavier-style initialization (1/sqrt) for stable gradients.
+          - **Forward Pass**: Efficient matrix transformation with integrated activation.
+          
+          ## 3. Network Architecture (Network.h)
+          - **Dynamic Sizing**: Supports custom layer configurations.
+          - **Algorithm**: Structured for Feedforward and Backpropagation training cycles.
+          EOF
 
-      - name: Commit and Push
+      - name: Convert MD to PDF
+        run: |
+          pandoc docs/Architecture_Report.md -o docs/Project_Documentation.pdf
+
+      - name: Push PDF Update
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add docs/
-          git commit -m "Create automated docs folder" || echo "No changes"
+          git add docs/Project_Documentation.pdf
+          git commit -m "Automated update: Professional Architecture PDF" || echo "No changes"
           git push

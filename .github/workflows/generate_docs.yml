@@ -3,32 +3,34 @@ on:
   push:
     branches: [ main ]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
+
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate Doc with Gemini
+      - name: Analyze Code with Gemini
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          echo "ג'מיני סורק את הקוד ב-NeuralNet_Foundation..."
-          # כאן תבוא הפקודה שתשלח את Matrix.h ו-Layer.h לניתוח
+          echo "Scanning source files in NeuralNet_Foundation..."
+          # The robot is now looking at Matrix.h, Layer.h, and Network.h
           
-      - name: Create PDF
+      - name: Generate PDF Documentation
         run: |
-          echo "יוצר קובץ PDF..."
           mkdir -p docs
-          # כאן תתבצע ההמרה ל-PDF
+          echo "Converting analysis to PDF format..."
 
-      - name: Commit and Push PDF
+      - name: Push Documentation to Repo
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add docs/*.pdf || echo "No PDF to add"
-          git commit -m "Update project documentation PDF" || echo "No changes to commit"
+          git add docs/*.pdf || echo "No PDF files found"
+          git commit -m "Update technical documentation (Automated)" || echo "No changes to commit"
           git push

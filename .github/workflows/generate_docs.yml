@@ -18,7 +18,7 @@ jobs:
       - name: Install PDF & Doc Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc texlive-latex-base texlive-fonts-recommended
+          sudo apt-get install -y --no-install-recommends pandoc texlive-latex-base texlive-latex-recommended texlive-fonts-recommended
 
       - name: Generate Technical Report
         run: |
@@ -49,5 +49,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add docs/Project_Technical_Docs.pdf
-          git commit -m "Update technical PDF (Automated Analysis)" || echo "No changes"
+          git commit -m "Update technical PDF (Fix: Missing LaTeX packages)" || echo "No changes"
           git push

@@ -1,0 +1,34 @@
+﻿name: Generate AI Documentation
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate Doc with Gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "ג'מיני סורק את הקוד ב-NeuralNet_Foundation..."
+          # כאן תבוא הפקודה שתשלח את Matrix.h ו-Layer.h לניתוח
+          
+      - name: Create PDF
+        run: |
+          echo "יוצר קובץ PDF..."
+          mkdir -p docs
+          # כאן תתבצע ההמרה ל-PDF
+
+      - name: Commit and Push PDF
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/*.pdf || echo "No PDF to add"
+          git commit -m "Update project documentation PDF" || echo "No changes to commit"
+          git push

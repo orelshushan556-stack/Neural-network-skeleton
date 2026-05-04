@@ -113,6 +113,7 @@ Matrix Matrix::operator+(const Matrix& other) const {
 // Scalar Multiplication
 Matrix Matrix::operator*(double scalar) const {
     Matrix res(rows, cols);
+
     for (int i = 0; i < rows * cols; i++) {
         res.data[i] = data[i] * scalar;
     }

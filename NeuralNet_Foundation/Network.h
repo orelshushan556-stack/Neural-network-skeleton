@@ -7,8 +7,7 @@ private:
     Layer** layers;
     int numLayers;
     double learningRate;
-    // מערך אובייקטים לשמירת התוצאות של כל שכבה (כולל הקלט)
-    Matrix* activations;
+
 
 public:
     Network(int* layerSizes, int layerSize, double lr);
@@ -19,5 +18,5 @@ public:
 
     Matrix feedForward(const Matrix& input);
     void backpropagate(const Matrix& input, const Matrix& target);
-    void train(const Matrix& input, const Matrix& target);
+    void train(Matrix* inputs, Matrix* targets, int numSamples, int epochs);
 };

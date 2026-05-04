@@ -4,7 +4,7 @@ on:
     branches: [ main ]
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -18,7 +18,6 @@ jobs:
       - name: Install PDF & Doc Tools
         run: |
           sudo apt-get update
-          # הוספת lmodern ו-texlive-latex-recommended פותרת את השגיאות האחרונות
           sudo apt-get install -y --no-install-recommends \
             pandoc \
             texlive-latex-base \
@@ -30,30 +29,56 @@ jobs:
         run: |
           mkdir -p docs
           cat <<EOF > docs/Architecture_Report.md
-          # Neural Network Project - Engineering Report
+          ---
+          title: "Neural Network Engine - Technical Documentation"
+          author: "Orel Shushan - Software Engineering"
+          date: "$(date +'%B %d, %2026')"
+          geometry: margin=2cm
+          ---
+
+          # 1. Project Overview
+          This project implements a fully functional Neural Network engine from scratch using C++. 
+
+          ## 1.1 Core Philosophy
+          - **Zero Dependency**: Built using standard C++ libraries only.
+          - **Manual Memory Management**: Utilizing Move Semantics (O(1)).
+          - **Optimization**: Matrix operations optimized for cache efficiency.
+
+          # 2. Architecture Components
+
+          ## 2.1 Matrix Engine
+          - **Move Semantics**: Move Constructors and Assignment.
+          - **Math**: Optimized multiplication and Hadamard products.
+
+          ## 2.2 Layer Class
+          - **Activation**: ReLU with derivative for gradient flow.
+          - **Initialization**: Random weights for symmetry breaking.
+
+          ## 2.3 Network Class
+          - **Feed-Forward**: Sequential signal propagation.
+          - **Backpropagation**: Implementation of the chain rule.
+
+          # 3. Mathematical Foundations
+          Forward Pass:
+          $$Z = W \cdot X + B$$
+          $$A = \text{ReLU}(Z)$$
+
+          # 4. Current Status
+          - **XOR Problem**: Successfully solved.
+          - **Automation**: PDF auto-generated via GitHub Actions.
           
-          ## 1. Linear Algebra Core (Matrix class)
-          The system is powered by a custom Matrix engine. 
-          - **Efficiency**: Implements Move Semantics (O(1)) and deep copy logic.
-          - **Math Operations**: Optimized multiplication, Hadamard products, and ReLU derivatives.
-          
-          ## 2. Neural Architecture (Layer class)
-          Each layer manages weights and biases for signal processing.
-          - **Initialization**: Xavier/He initialization (1/sqrt) for stability.
-          - **Activation**: Integrated ReLU processing.
-          
-          ## 3. High-Level Orchestration (Network class)
-          The top-level orchestrator for the AI model.
+          ---
+          *Last Update: $(date)*
           EOF
 
       - name: Create Professional PDF
         run: |
-          pandoc docs/Architecture_Report.md -o docs/Project_Technical_Docs.pdf
+          pandoc docs/Architecture_Report.md --toc -o docs/Project_Technical_Docs.pdf
 
       - name: Push to GitHub
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add docs/Project_Technical_Docs.pdf
-          git commit -m "Update technical PDF (Fix: Missing LaTeX fonts)" || echo "No changes"
-          git push
+          git commit -m "Automated Documentation Update - $(date +'%Y-%m-%d %H:%M')" || echo "No changes"
+          git push origin main

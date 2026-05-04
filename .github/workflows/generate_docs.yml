@@ -19,95 +19,79 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            pandoc \
-            texlive-latex-base \
-            texlive-latex-recommended \
-            texlive-fonts-recommended \
-            lmodern \
-            python3
+            pandoc texlive-latex-base texlive-latex-recommended \
+            texlive-fonts-recommended lmodern python3
 
-      - name: Autonomous Engineering Agent (Source Code Parser)
+      - name: Advanced Engineering Agent
         run: |
           python3 - <<'EOF'
           import os
           import re
 
-          def clean_text(text):
-              # Remove any non-ASCII characters (like Hebrew) to prevent LaTeX errors
-              return "".join(i for i in text if ord(i) < 128)
+          def get_explanation(func_name):
+              explanations = {
+                  "feedForward": "Propagates the input signal through the network layers using the formula $Z = W \cdot A + B$.",
+                  "backpropagate": "Calculates gradients using the Chain Rule to minimize the loss function.",
+                  "randomize": "Breaks symmetry by initializing weights with small random values, allowing neurons to learn distinct features.",
+                  "backward": "Calculates the local gradient for a specific layer and updates parameters using Stochastic Gradient Descent.",
+                  "applyReLU": "Applies the non-linear activation function $max(0, x)$ to introduce complex decision boundaries.",
+                  "train": "The primary optimization loop. It iterates over the dataset for multiple epochs to refine the model's accuracy."
+              }
+              return explanations.get(func_name, "Core internal logic for neural computations.")
 
           def analyze_project(directory):
-              report = ""
-              for root, dirs, files in os.walk(directory):
-                  for file in sorted(files):
-                      if file.endswith((".h", ".cpp")):
-                          report += f"\n# Module Analysis: `{file}`\n\n"
-                          with open(os.path.join(root, file), 'r', errors='ignore') as f:
-                              content = f.read()
+              full_doc = ""
+              for file in sorted(os.listdir(directory)):
+                  if file.endswith(".h"):
+                      path = os.path.join(directory, file)
+                      with open(path, 'r') as f:
+                          content = f.read()
+                          class_name = re.search(r'class\s+(\w+)', content)
+                          if class_name:
+                              cls = class_name.group(1)
+                              full_doc += f"\n# Architecture: `{cls}` Component\n"
+                              full_doc += f"The `{cls}` class is a fundamental building block of the neural engine found in `{file}`.\n\n"
           
-                              # 1. Detect Classes
-                              classes = re.findall(r'class\s+(\w+)', content)
-                              for cls in classes:
-                                  report += f"## Architecture: Class `{cls}`\n"
-                                  report += f"The agent detected the structural definition of `{cls}` in this module. This component manages specific neural operations.\n\n"
-
-                              # 2. Extract Methods and Doc-Comments
-                              # Looks for /** */ or /// blocks followed by function signatures
-                              docs = re.findall(r'((?:/\*\*.*?\*/)|(?:(?:///.*?\n)+))\s*([\w:*&\s]+?\s+\w+\s*\(.*?\))', content, re.DOTALL)
-          
-                              if docs:
-                                  report += "### Technical Implementation Details\n"
-                                  for comment, sig in docs:
-                                      # Clean the extraction
-                                      clean_comment = comment.replace("/**","").replace("*/","").replace("///","").strip()
-                                      clean_comment = clean_text(clean_comment)
-                                      clean_sig = clean_text(sig.strip())
-          
-                                      report += f"#### Function: `{clean_sig}`\n"
-                                      report += f"**Developer Intent**: {clean_comment}\n\n"
-                              else:
-                                  # Fallback: Just list important functions if no comments exist
-                                  methods = re.findall(r'(\w+[\s\*&]+\w+\s*\(.*?\))(?=\s*;|\s*\{)', content)
-                                  if methods:
-                                      report += "### Identified Interface Methods\n"
-                                      for m in methods:
-                                          if not any(k in m for k in ['if', 'for', 'while', 'switch']):
-                                              report += f"- `{clean_text(m.strip())}`\n"
-                                      report += "\n"
-              return report
+                              # Extract real methods, ignore member variables
+                              methods = re.findall(r'([\w:*&\s]+?\s+(\w+)\s*\(.*?\))(?=\s*;)', content)
+                              full_doc += "## Functional Decomposition\n"
+                              for sig, name in methods:
+                                  if name not in ['if', 'for', 'while']:
+                                      full_doc += f"### Method: `{name}`\n"
+                                      full_doc += f"**Signature**: `{sig.strip()}`\n\n"
+                                      full_doc += f"**Engineering Context**: {get_explanation(name)}\n\n"
+              return full_doc
 
           header = """---
-          title: "Neural Network Skeleton: Autonomous Technical Report"
+          title: "Neural Engine: Deep Technical Analysis"
           author: "Orel Shushan - Software Engineering"
           date: "May 2026"
           geometry: margin=2.5cm
           toc: true
-          numbersections: true
           ---
 
-          # Project Executive Summary
-          This document is an autonomous technical decomposition of the Neural Network engine. 
-          The analysis agent has parsed the source code to map the mathematical architecture and memory management strategies.
+          # 1. Project System Overview
+          This report provides a formal decomposition of the Neural Network Skeleton. 
+          The engine is designed for high-performance matrix operations and gradient-based learning.
 
-          # Engineering Foundations
-          The project is built on C++14 standards, focusing on:
-          - **Manual Memory Management**: Implementation of Move Semantics for performance.
-          - **Mathematical Precision**: Custom Linear Algebra engine for neural computations.
-          - **Static Analysis**: Documentation generated via CI/CD pipelines.
+          # 2. Key Engineering Principles
+          - **Cache Coherency**: Matrix operations are optimized for sequential memory access.
+          - **Move Semantics**: Leveraging C++14 to eliminate redundant memory allocations.
+          - **Modular Design**: Separation of Linear Algebra (Matrix) and Neural Logic (Layer/Network).
 
+          # 3. Deep Component Analysis
           """
           
-          # Target the core logic directory
-          project_analysis = analyze_project('NeuralNet_Foundation')
+          # Run on core directory
+          analysis = analyze_project('NeuralNet_Foundation')
           
           with open('docs/Architecture_Report.md', 'w') as f:
-              f.write(header + project_analysis)
+              f.write(header + analysis)
           EOF
 
       - name: Synthesize Professional PDF
         run: |
           mkdir -p docs
-          # Using pdflatex (safe for ASCII/English)
           pandoc docs/Architecture_Report.md --toc --number-sections -o docs/Project_Technical_Docs.pdf
 
       - name: Update Repository
@@ -115,6 +99,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add docs/Project_Technical_Docs.pdf
-          # If no changes, the workflow will finish gracefully
-          git commit -m "Auto-update: Synthesized Technical Report [English Only]" || echo "No changes"
+          git commit -m "Auto-generate: Comprehensive Technical Analysis" || echo "No changes"
           git push origin main

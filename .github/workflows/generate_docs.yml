@@ -28,48 +28,20 @@ jobs:
       - name: Generate Technical Report
         run: |
           mkdir -p docs
-          cat <<EOF > docs/Architecture_Report.md
-          ---
-          title: "Neural Network Engine - Technical Documentation"
-          author: "Orel Shushan - Software Engineering"
-          date: "$(date +'%B %d, %2026')"
-          geometry: margin=2cm
-          ---
-
-          # 1. Project Overview
-          This project implements a fully functional Neural Network engine from scratch using C++. 
-
-          ## 1.1 Core Philosophy
-          - **Zero Dependency**: Built using standard C++ libraries only.
-          - **Manual Memory Management**: Utilizing Move Semantics (O(1)).
-          - **Optimization**: Matrix operations optimized for cache efficiency.
-
-          # 2. Architecture Components
-
-          ## 2.1 Matrix Engine
-          - **Move Semantics**: Move Constructors and Assignment.
-          - **Math**: Optimized multiplication and Hadamard products.
-
-          ## 2.2 Layer Class
-          - **Activation**: ReLU with derivative for gradient flow.
-          - **Initialization**: Random weights for symmetry breaking.
-
-          ## 2.3 Network Class
-          - **Feed-Forward**: Sequential signal propagation.
-          - **Backpropagation**: Implementation of the chain rule.
-
-          # 3. Mathematical Foundations
-          Forward Pass:
-          $$Z = W \cdot X + B$$
-          $$A = \text{ReLU}(Z)$$
-
-          # 4. Current Status
-          - **XOR Problem**: Successfully solved.
-          - **Automation**: PDF auto-generated via GitHub Actions.
+          # Using printf to safely handle backslashes for LaTeX
+          printf -- '---\ntitle: "Neural Network Engine - Technical Documentation"\nauthor: "Orel Shushan - Software Engineering"\ndate: "%s"\ngeometry: margin=2cm\n---\n\n' "$(date)" > docs/Architecture_Report.md
           
-          ---
-          *Last Update: $(date)*
-          EOF
+          printf -- '# 1. Project Overview\nThis project implements a fully functional Neural Network engine from scratch using C++.\n\n' >> docs/Architecture_Report.md
+          
+          printf -- '## 1.1 Core Philosophy\n- **Zero Dependency**: Standard C++ libraries only.\n- **Manual Memory**: Move Semantics (O(1)).\n- **Efficiency**: Optimized Matrix operations.\n\n' >> docs/Architecture_Report.md
+          
+          printf -- '# 2. Architecture\n\n## 2.1 Matrix Engine\nCustom linear algebra engine with move constructors.\n\n## 2.2 Layer Class\nManaged weights, biases, and ReLU activation.\n\n' >> docs/Architecture_Report.md
+          
+          printf -- '# 3. Mathematical Foundations\n\nForward Pass:\n\n$$Z = W \\cdot X + B$$\n\n$$A = \\text{ReLU}(Z)$$\n\n' >> docs/Architecture_Report.md
+          
+          printf -- 'Backward Pass (Gradient Descent):\n\n$$\\nabla W = \\text{error} \\cdot X^T$$\n\n' >> docs/Architecture_Report.md
+          
+          printf -- '# 4. Current Status\n- **XOR Problem**: Solved.\n- **Automation**: PDF auto-generated.\n\n---\n*Last Update: %s*' "$(date)" >> docs/Architecture_Report.md
 
       - name: Create Professional PDF
         run: |
@@ -80,5 +52,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add docs/Project_Technical_Docs.pdf
-          git commit -m "Automated Documentation Update - $(date +'%Y-%m-%d %H:%M')" || echo "No changes"
+          git commit -m "Fix LaTeX formatting in PDF" || echo "No changes"
           git push origin main

@@ -1,13 +1,17 @@
 #include <iostream>
+#include <ctime>
 #include "Network.h"
 #include "Matrix.h"
 
 int main() {
-    // 1. Network setup: 2 inputs, 4 hidden neurons, 1 output
-    int layerSizes[] = {2, 4, 1};
+    // 1. Set seed for reproducible results
+    srand(static_cast<unsigned>(time(0)));
+
+    // 2. Network setup: 2 inputs, 8 hidden neurons, 1 output
+    int layerSizes[] = {2, 8, 1};
     Network net(layerSizes, 3, 0.1);
 
-    // 2. XOR inputs
+    // 3. XOR inputs
     Matrix inputs[4];
     for (int i = 0; i < 4; i++) inputs[i] = Matrix(2, 1);
 
@@ -16,7 +20,7 @@ int main() {
     inputs[2](0, 0) = 1; inputs[2](1, 0) = 0;
     inputs[3](0, 0) = 1; inputs[3](1, 0) = 1;
 
-    // 3. XOR targets
+    // 4. XOR targets
     Matrix targets[4];
     for (int i = 0; i < 4; i++) targets[i] = Matrix(1, 1);
 
@@ -25,12 +29,15 @@ int main() {
     targets[2](0, 0) = 1;
     targets[3](0, 0) = 0;
 
-    // 4. Train
-    net.train(inputs, targets, 4, 10000);
+    // 5. Train with more epochs for stability
+    std::cout << "Starting training..." << std::endl;
+    net.train(inputs, targets, 4, 20000);
+    std::cout << "Training complete!\n" << std::endl;
 
-    // 5. Test results
+    // 6. Test results
     std::cout << "Final Predictions:" << std::endl;
     for (int i = 0; i < 4; i++) {
+        std::cout << "In: " << inputs[i](0, 0) << "," << inputs[i](1, 0) << " -> Out: ";
         Matrix prediction = net.feedForward(inputs[i]);
         prediction.print();
     }

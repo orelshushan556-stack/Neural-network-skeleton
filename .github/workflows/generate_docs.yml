@@ -15,83 +15,106 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Analysis & PDF Tools
+      - name: Install PDF & Analysis Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            pandoc texlive-latex-base texlive-latex-recommended \
-            texlive-fonts-recommended lmodern python3
+            pandoc \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-fonts-recommended \
+            lmodern \
+            python3
 
-      - name: Code Analysis Agent (Python)
+      - name: Autonomous Engineering Agent (Source Code Parser)
         run: |
           python3 - <<'EOF'
           import os
           import re
 
-          def analyze_source_code(directory):
-              full_report = ""
+          def clean_text(text):
+              # Remove any non-ASCII characters (like Hebrew) to prevent LaTeX errors
+              return "".join(i for i in text if ord(i) < 128)
+
+          def analyze_project(directory):
+              report = ""
               for root, dirs, files in os.walk(directory):
                   for file in sorted(files):
                       if file.endswith((".h", ".cpp")):
-                          with open(os.path.join(root, file), 'r') as f:
+                          report += f"\n# Module Analysis: `{file}`\n\n"
+                          with open(os.path.join(root, file), 'r', errors='ignore') as f:
                               content = f.read()
-                              full_report += f"# File Analysis: `{file}`\n\n"
           
-                              # 1. Find Classes
+                              # 1. Detect Classes
                               classes = re.findall(r'class\s+(\w+)', content)
                               for cls in classes:
-                                  full_report += f"## Class: **{cls}**\n"
-                                  full_report += f"The agent detected a class definition for `{cls}` in this file.\n\n"
+                                  report += f"## Architecture: Class `{cls}`\n"
+                                  report += f"The agent detected the structural definition of `{cls}` in this module. This component manages specific neural operations.\n\n"
 
-                              # 2. Extract Functions and their preceding Comments
-                              # This regex looks for documentation blocks followed by function signatures
-                              # Matches both /** ... */ and /// style comments
-                              doc_blocks = re.findall(r'((?:/\*\*.*?\*/)|(?:(?:///.*?\n)+))\s*([\w:*&\s]+?\s+\w+\s*\(.*?\))', content, re.DOTALL)
+                              # 2. Extract Methods and Doc-Comments
+                              # Looks for /** */ or /// blocks followed by function signatures
+                              docs = re.findall(r'((?:/\*\*.*?\*/)|(?:(?:///.*?\n)+))\s*([\w:*&\s]+?\s+\w+\s*\(.*?\))', content, re.DOTALL)
           
-                              if doc_blocks:
-                                  full_report += "### Detailed Function Analysis\n"
-                                  for comment, signature in doc_blocks:
-                                      clean_comment = comment.replace("/**", "").replace("*/", "").replace("///", "").strip()
-                                      full_report += f"- **Signature**: `{signature.strip()}`\n"
-                                      full_report += f"  - **Logic Explained**: {clean_comment}\n\n"
+                              if docs:
+                                  report += "### Technical Implementation Details\n"
+                                  for comment, sig in docs:
+                                      # Clean the extraction
+                                      clean_comment = comment.replace("/**","").replace("*/","").replace("///","").strip()
+                                      clean_comment = clean_text(clean_comment)
+                                      clean_sig = clean_text(sig.strip())
+          
+                                      report += f"#### Function: `{clean_sig}`\n"
+                                      report += f"**Developer Intent**: {clean_comment}\n\n"
                               else:
-                                  full_report += "> *No specific documentation comments found for functions in this file. Using standard signature detection.*\n\n"
-                                  # Fallback: Just find functions without comments
-                                  simple_methods = re.findall(r'(\w+[\s\*&]+\w+\s*\(.*?\))(?=\s*;|\s*\{)', content)
-                                  for sm in simple_methods:
-                                      if "if" not in sm and "for" not in sm: # filter out keywords
-                                          full_report += f"- Identified Function: `{sm.strip()}`\n"
-              return full_report
+                                  # Fallback: Just list important functions if no comments exist
+                                  methods = re.findall(r'(\w+[\s\*&]+\w+\s*\(.*?\))(?=\s*;|\s*\{)', content)
+                                  if methods:
+                                      report += "### Identified Interface Methods\n"
+                                      for m in methods:
+                                          if not any(k in m for k in ['if', 'for', 'while', 'switch']):
+                                              report += f"- `{clean_text(m.strip())}`\n"
+                                      report += "\n"
+              return report
 
           header = """---
-          title: "Autonomous Code Analysis Report"
-          author: "Orel Shushan - SCE Software Engineering"
+          title: "Neural Network Skeleton: Autonomous Technical Report"
+          author: "Orel Shushan - Software Engineering"
           date: "May 2026"
           geometry: margin=2.5cm
+          toc: true
+          numbersections: true
           ---
 
-          # Introduction
-          This report was generated by an automated static analysis agent. 
-          The agent parsed the C++ source code, extracted class hierarchies, and mapped functional logic from documentation comments.
+          # Project Executive Summary
+          This document is an autonomous technical decomposition of the Neural Network engine. 
+          The analysis agent has parsed the source code to map the mathematical architecture and memory management strategies.
+
+          # Engineering Foundations
+          The project is built on C++14 standards, focusing on:
+          - **Manual Memory Management**: Implementation of Move Semantics for performance.
+          - **Mathematical Precision**: Custom Linear Algebra engine for neural computations.
+          - **Static Analysis**: Documentation generated via CI/CD pipelines.
 
           """
           
-          # Run analysis on your project folder
-          analysis_content = analyze_source_code('NeuralNet_Foundation')
-
+          # Target the core logic directory
+          project_analysis = analyze_project('NeuralNet_Foundation')
+          
           with open('docs/Architecture_Report.md', 'w') as f:
-              f.write(header + analysis_content)
+              f.write(header + project_analysis)
           EOF
 
-      - name: Convert Analysis to PDF
+      - name: Synthesize Professional PDF
         run: |
           mkdir -p docs
+          # Using pdflatex (safe for ASCII/English)
           pandoc docs/Architecture_Report.md --toc --number-sections -o docs/Project_Technical_Docs.pdf
 
-      - name: Commit and Push Docs
+      - name: Update Repository
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add docs/Project_Technical_Docs.pdf
-          git commit -m "Update autonomous documentation" || echo "No changes"
+          # If no changes, the workflow will finish gracefully
+          git commit -m "Auto-update: Synthesized Technical Report [English Only]" || echo "No changes"
           git push origin main
